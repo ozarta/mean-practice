@@ -1,0 +1,27 @@
+
+    <h1>Flapper News</h1>
+
+
+<div ng-show="error" class="">
+    <span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="usuario.register()"
+      style="margin-top:30px;">
+    <h3>Register</h3>
+
+
+    <md-input-container>
+        <label>Usuario</label>
+        <input type="text" ng-model="usuario.user.username" required md-maxlength="30">
+    </md-input-container>
+    <md-input-container>
+        <label>Contraseña</label>
+        <input type="text" ng-model="usuario.user.password" required md-maxlength="30">
+    </md-input-container>
+
+
+
+
+    <md-button type="submit" class="md-raised"> Registrar </md-button>
+</form>

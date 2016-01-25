@@ -1,0 +1,24 @@
+ <h1>Flapper News</h1>
+
+
+<div ng-show="error" class="">
+    <span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="usuario.logIn()"
+      style="margin-top:30px;">
+    <h3>Iniciar Sesion</h3>
+
+
+        <input type="text"
+               class="form-control"
+               placeholder="Username"
+               ng-model="usuario.user.username">
+
+        <input type="password"
+               class="form-control"
+               placeholder="Password"
+               ng-model="usuario.user.password">
+
+    <button type="submit" class="btn btn-primary">Iniciar Sesion</button>
+</form>

@@ -1,0 +1,32 @@
+{{post.post.title}}
+    <h3>
+        <a ng-show="poster.post.link" href="{{poster.post.link}}">
+            {{poster.post.title}}
+        </a>
+      <span ng-hide="poster.post.link">
+        {{poster.post.title}}
+      </span>
+    </h3>
+
+<div ng-repeat="comment in poster.post.comments | orderBy:'-upvotes'">
+    <span class="glyphicon glyphicon-thumbs-up"
+          ng-click="incrementUpvotes(comment)"></span>
+    {{comment.upvotes}} - by {{comment.author}}
+    <span style="font-size:20px; margin-left:10px;">
+      {{comment.body}}
+    </span>
+</div>
+
+
+<form ng-submit="poster.addComment()"
+      style="margin-top:30px;">
+    <h3>Add a new comment</h3>
+
+
+    <md-input-container>
+        <label>Comentario</label>
+        <input type="text" ng-model="poster.body" required md-maxlength="30">
+    </md-input-container>
+
+    <md-button type="submit" class="md-raised"> Comentar </md-button>
+</form>

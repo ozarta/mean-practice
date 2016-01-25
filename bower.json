@@ -1,0 +1,19 @@
+{
+  "name": "flapper-news",
+  "description": "prueba Mean stack",
+  "main": "",
+  "authors": [
+    "ivan parra <ivantrips@hotmail.com>"
+  ],
+  "license": "MIT",
+  "moduleType": [],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/libs",
+    "test",
+    "tests"
+  ]
+}
