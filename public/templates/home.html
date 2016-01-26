@@ -1,13 +1,39 @@
+<style>
+    .thumb {
+        width: 24px;
+        height: 24px;
+        float: none;
+        position: relative;
+        top: 7px;
+    }
+
+    form .progress {
+        line-height: 15px;
+    }
+    .progress {
+        display: inline-block;
+        width: 100px;
+        border: 3px groove #CCC;
+    }
+
+    .progress div {
+        font-size: smaller;
+        background: orange;
+        width: 0;
+    }
+</style>
 <md-input-container>
     <label>Filtrar</label>
     <input type="text" ng-model="search" required md-maxlength="10">
 </md-input-container>
 <div>
-    <div ng-repeat="post in main.posts | orderBy: '-upvotes' | filter:search">
+    <div ng-repeat="post in posts | orderBy: '-upvotes' | filter:search">
+        <img src="{{post.file}}">
+        <a ng-click="remove(post)">Remove</a>
        <span ng-show="post.author">
             posted by <a>{{post.author}}</a> |
         </span>
-        <span ng-click="main.incrementUpvotes(post)">^</span>
+        <span ng-click="incrementUpvotes(post)">^</span>
         <a ng-show="post.link" href="{{post.link}}">
 
             {{post.title}}
@@ -21,20 +47,42 @@
 
 </span>
     </div>
-    <form ng-submit="main.addPost()" ng-show="main.isLoggedIn()">
+    <form  enctype="multipart/form-data" name="myForm" ng-submit="uploadPic(picFile)">
         <md-input-container>
             <label>Titulo</label>
-            <input type="text" ng-model="main.title" required md-maxlength="10">
+            <input type="text" ng-model="title" required md-maxlength="10">
         </md-input-container>
         <md-input-container>
             <label>Link</label>
-            <input type="text" ng-model="main.link" required md-maxlength="30">
+            <input type="text" ng-model="link" required md-maxlength="30">
         </md-input-container>
-        <md-button type="submit" class="md-raised"> Publicar </md-button>
+        <br>Photo:
+        <input type="file" ngf-select ng-model="picFile" ngf-multiple="false" name="file" accept="image/*" ngf-max-size="2MB" required />
+        <br>
+
+        <i ng-show="myForm.file.$error.maxSize">File too large {{picFile.size / 1000000|number:1}}MB: max {{picFile.$errorParam}}</i>
+
+        <img ng-show="myForm.file.$valid" ngf-src="!picFile.$error && picFile" class="thumb">
+
+        <br>
+
+
+            <span class="progress" ng-show="picFile.progress >= 0">
+              <div style="width:{{picFile.progress}}%" ng-bind="picFile.progress + '%'" class="ng-binding"></div>
+            </span>
+        <span ng-show="picFile.result">Upload Successful</span>
+
+
+        <md-button type="submit"  class="md-raised"> Publicar </md-button>
 
 
     </form>
-    <div ng-hide="main.isLoggedIn()">
-        <h3>You need to <a href="/#/login">Log In</a> or <a href="/#/register">Register</a> before you can add a post.</h3>
+    <div ng-hide="isLoggedIn()">
+        <h3>Necesitas   <a href="/#/login">Iniciar Sesion</a> o <a href="/#/register">Registrarte</a> Antes de poder publicar</h3>
+
     </div>
+
+
+
+
 </div>

@@ -1,4 +1,4 @@
-var app = angular.module('flapperNews', ['ui.router','ngMaterial']);
+var app = angular.module('flapperNews', ['ui.router','ngMaterial','ngFileUpload']);
 
 
 
@@ -6,6 +6,7 @@ app.factory('posts', ['$http','auth',function($http,auth){
     var o = {
     posts:[]
     };
+
     o.getAll = function() {
         return $http.get('/posts').success(function(data){
             angular.copy(data, o.posts);
@@ -18,6 +19,7 @@ app.factory('posts', ['$http','auth',function($http,auth){
             o.posts.push(data);
         });
     };
+
     o.upvote = function(post) {
         return $http.put('/posts/' + post._id + '/upvote', null, {
             headers: {Authorization: 'Bearer '+auth.getToken()}
@@ -83,8 +85,6 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 
     return auth;
 }]);
-
-
 app.config(function($mdThemingProvider) {
     $mdThemingProvider.theme('default')
         .primaryPalette('grey')
@@ -99,7 +99,7 @@ app.config([
             .state('home', {
                 url: '/home',
                 templateUrl: 'templates/home.html',
-                controller: 'MainCtrl as main',
+                controller: 'MainCtrl',
                 resolve: {
                     postPromise: ['posts', function(posts){
                         return posts.getAll();
@@ -139,6 +139,8 @@ app.config([
         $urlRouterProvider.otherwise('home');
     }]);
 
+
+
 app.controller('NavCtrl', [
     'auth',
     function( auth){
@@ -175,6 +177,7 @@ app.controller('PostsCtrl', [  'posts','post','auth',  function(  posts,post,aut
         var poster = this;
         poster.post = post;
     poster.isLoggedIn = auth.isLoggedIn;
+
     poster.addComment = function(){
         if(poster.body === '') { return; }
         posts.addComment(post._id, {
@@ -191,22 +194,92 @@ app.controller('PostsCtrl', [  'posts','post','auth',  function(  posts,post,aut
 
     }]);
 
-app.controller('MainCtrl',['posts','auth', function (posts,auth) {
-   var main = this;
 
-    main.posts = posts.posts;
-    main.isLoggedIn = auth.isLoggedIn;
-    main.addPost = function(){
-        if(!main.title || main.title === '') { return; }
-        posts.create({
-            title: main.title,
-            link: main.link
+app.controller('MyCtrl', ['$scope', 'Upload','auth', '$timeout', function ($scope, Upload,auth, $timeout) {
+    $scope.uploadPic = function(file) {
+        file.upload = Upload.upload({
+            url: 'https://angular-file-upload-cors-srv.appspot.com/upload',
+            data: {file: file, username: $scope.username},
+        });
+
+        file.upload.then(function (response) {
+            $timeout(function () {
+                file.result = response.data;
             });
-        main.title = '';
-        main.link = '';
+        }, function (response) {
+            if (response.status > 0)
+                $scope.errorMsg = response.status + ': ' + response.data;
+        }, function (evt) {
+            // Math.min is to fix IE which reports 200% sometimes
+            file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
+        });
+    }
+}]);
+
+app.controller('MainCtrl',['$scope','Upload','posts','auth','$timeout','$http', function ($scope,Upload,posts,auth,$timeout,$http) {
+
+
+    $scope.posts = posts.posts;
+    $scope.isLoggedIn = auth.isLoggedIn;
+    $scope.remove = function(post) {
+        return $http.delete('/posts/' + post._id,{headers: {Authorization: 'Bearer '+auth.getToken()}})
+            .success(function(data) {
+                posts.getAll()
+
+            })
+            .error(function(data) {
+                console.log('Error: ' + data);
+            });
+    };
+    $scope.uploadPic = function(file) {
+        if(file==undefined)
+        {
+            posts.create({
+                title: $scope.title,
+                link: $scope.link
+            });
+            $scope.title = '';
+            $scope.link = '';
+        }
+        console.log(file);
+        console.log($scope.link);
+        console.log($scope.title);
+        file.upload = Upload.upload({
+            url: '/posts',
+            data: {title:$scope.title,link:$scope.link},
+            file: file,
+            headers: {Authorization: 'Bearer '+auth.getToken(),'Content-Type': file.type}
+
+        });
+
+        file.upload.then(function (response) {
+            console.log("Postcontroller: upload then ");
+            $timeout(function () {
+                file.result = response.data;
+            });
+        }, function (response) {
+            if (response.status > 0)
+                $scope.errorMsg = response.status + ': ' + response.data;
+        });
+
+        file.upload.progress(function (evt) {
+            // Math.min is to fix IE which reports 200% sometimes
+            file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
+            console.log("PostController: upload progress " + file.progress);
+        });
+
+        file.upload.success(function (data, status, headers, config) {
+            $scope.title = '';
+            $scope.link = '';
+            $scope.picFile = '';
+            console.log('file ' + config.file.name + 'is uploaded successfully. Response: ' + data);
+            posts.getAll()
+        });
+
+
     };
 
-    main.incrementUpvotes = function(post) {
+    $scope.incrementUpvotes = function(post) {
         posts.upvote(post)
     };
 }]);

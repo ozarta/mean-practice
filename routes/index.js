@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 var Post = mongoose.model('Post');
 var Comment = mongoose.model('Comment');
 var User = mongoose.model('User');
+
 var jwt = require('express-jwt');
 
 var auth = jwt({secret: 'SECRET', userProperty: 'payload'});
@@ -17,7 +18,13 @@ router.get('/posts', function(req, res, next) {
   });
 });
 
-router.post('/posts',auth, function(req, res, next) {
+
+var multer = require('multer');
+var upload = multer({ dest: './public/uploads2'});
+
+router.post('/posts',auth, upload.single('file'), function(req, res, next) {
+
+  req.body.file = '/uploads2/'+req.file.filename;
   var post = new Post(req.body);
   post.author = req.payload.username;
   post.save(function(err, post){
@@ -26,6 +33,8 @@ router.post('/posts',auth, function(req, res, next) {
     res.json(post);
   });
 });
+
+
 
 router.param('post', function(req, res, next, id) {
   var query = Post.findById(id);
@@ -52,6 +61,15 @@ router.put('/posts/:post/upvote',auth, function(req, res, next) {
     if (err) { return next(err); }
 
     res.json(post);
+  });
+});
+
+router.delete('/posts/:_id',auth, function(req, res,next){
+  console.log("Deleting");
+  Post.findById( req.params._id, function ( err, post ){
+    post.remove( function ( err, post ){
+      res.json(post);
+    });
   });
 });
 

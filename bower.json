@@ -15,5 +15,8 @@
     "public/libs",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "ng-file-upload": "~11.2.3"
+  }
 }
